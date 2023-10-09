@@ -1,7 +1,0 @@
-flask
-requests
-configparser
-redis
-pyopenssl
-termcolor
-evolved5g

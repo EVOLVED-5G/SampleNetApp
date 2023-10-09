@@ -1,19 +1,16 @@
-version: "3.9"
+version: "3"
 
 
 services:
 
   app:
-    build: .
-    environment:
-      - NEF_ADDRESS=${NEF_ADDRESS}
-      - NEF_USER=${NEF_USER}
-      - NEF_PASSWORD=${NEF_PASSWORD}
-      - PATH_TO_CERTS=${PATH_TO_CERTS}
-      - CAPIF_HOSTNAME=${CAPIF_HOSTNAME}
-      - CAPIF_PORT_HTTP=${CAPIF_PORT_HTTP}
-      - CAPIF_PORT_HTTPS=${CAPIF_PORT_HTTPS}
-      - CALLBACK_ADDRESS=${CALLBACK_ADDRESS}
+
+    build:
+      context: ./src
+      dockerfile: Dockerfile
+
+    env_file:
+      - .env
 
     container_name: zorte_netapp
 
@@ -21,9 +18,27 @@ services:
       - capifcore:${CAPIF_IP}
     ports:
       - "5000:5000"
-    #volumes:
-    #  - ./src/api.py:/zortenet_netapp/api.py
-    #  - ./src/netapp_utils.py:/zortenet_netapp/netapp_utils.py
-    #  - ./src/prepare.sh:/zortenet_netapp/prepare.sh
-    #  - ./src/capif_registration_template.json:/zortenet_netapp/capif_registration_template.json
-      
+
+  grafana:
+    build:
+      context: "./grafana-svc"
+      dockerfile: Dockerfile
+    container_name: grafana
+
+    extra_hosts:
+      - influxdb:${INFLUX_IP}
+
+    ports:
+      - "3000:3000"
+
+  influxdb:
+    image: influxdb:1.8-alpine
+    ports:
+      - '8086:8086'
+
+    environment:
+      - INFLUXDB_DB=influx
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=admin
+
+    container_name: influxdb
